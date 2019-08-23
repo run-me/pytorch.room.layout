@@ -1,0 +1,9 @@
+# project requirements
+torch==0.4.1
+pillow==5.2.0
+opencv-python
+torchvision==0.2.1
+
+# linting and reformatting
+yapf
+flake8
