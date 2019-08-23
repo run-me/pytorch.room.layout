@@ -28,10 +28,14 @@ class RandomCrop(object):
             top = (th - h) // 2
             bottom = th - h - top
         if left > 0 or right > 0 or top > 0 or bottom > 0:
-            label = pad_image(
-                'constant', label, top, bottom, left, right, value=255)
-            image = pad_image(
-                'reflection', image, top, bottom, left, right)
+            label = pad_image('constant',
+                              label,
+                              top,
+                              bottom,
+                              left,
+                              right,
+                              value=255)
+            image = pad_image('reflection', image, top, bottom, left, right)
         w, h = image.size
         if w == tw and h == th:
             return (image, label, *args)
@@ -71,7 +75,6 @@ class RandomRotate(object):
     the given size. size can be a tuple (target_height, target_width)
     or an integer, in which case the target will be of a square shape (size, size)
     """
-
     def __init__(self, angle):
         self.angle = angle
 
@@ -96,11 +99,12 @@ class RandomRotate(object):
 class RandomHorizontalFlip(object):
     """Randomly horizontally flips the given PIL.Image with a probability of 0.5
     """
-
     def __call__(self, image, label):
         if random.random() < 0.5:
-            results = [image.transpose(Image.FLIP_LEFT_RIGHT),
-                       label.transpose(Image.FLIP_LEFT_RIGHT)]
+            results = [
+                image.transpose(Image.FLIP_LEFT_RIGHT),
+                label.transpose(Image.FLIP_LEFT_RIGHT)
+            ]
         else:
             results = [image, label]
         return results
@@ -111,7 +115,6 @@ class Normalize(object):
     will normalize each channel of the torch.*Tensor, i.e.
     channel = (channel - mean) / std
     """
-
     def __init__(self, mean, std):
         self.mean = torch.FloatTensor(mean)
         self.std = torch.FloatTensor(std)
@@ -146,13 +149,13 @@ def pad_reflection(image, top, bottom, left, right):
     new_shape[0] += top + bottom
     new_shape[1] += left + right
     new_image = np.empty(new_shape, dtype=image.dtype)
-    new_image[top:top+h, left:left+w] = image
-    new_image[:top, left:left+w] = image[top:0:-1, :]
-    new_image[top+h:, left:left+w] = image[-1:-bottom-1:-1, :]
-    new_image[:, :left] = new_image[:, left*2:left:-1]
-    new_image[:, left+w:] = new_image[:, -right-1:-right*2-1:-1]
-    return pad_reflection(new_image, next_top, next_bottom,
-                          next_left, next_right)
+    new_image[top:top + h, left:left + w] = image
+    new_image[:top, left:left + w] = image[top:0:-1, :]
+    new_image[top + h:, left:left + w] = image[-1:-bottom - 1:-1, :]
+    new_image[:, :left] = new_image[:, left * 2:left:-1]
+    new_image[:, left + w:] = new_image[:, -right - 1:-right * 2 - 1:-1]
+    return pad_reflection(new_image, next_top, next_bottom, next_left,
+                          next_right)
 
 
 def pad_constant(image, top, bottom, left, right, value):
@@ -164,7 +167,7 @@ def pad_constant(image, top, bottom, left, right, value):
     new_shape[1] += left + right
     new_image = np.empty(new_shape, dtype=image.dtype)
     new_image.fill(value)
-    new_image[top:top+h, left:left+w] = image
+    new_image[top:top + h, left:left + w] = image
     return new_image
 
 
@@ -181,7 +184,6 @@ def pad_image(mode, image, top, bottom, left, right, value=0):
 
 class Pad(object):
     """Pads the given PIL.Image on all sides with the given "pad" value"""
-
     def __init__(self, padding, fill=0):
         assert isinstance(padding, numbers.Number)
         assert isinstance(fill, numbers.Number) or isinstance(fill, str) or \
@@ -191,19 +193,24 @@ class Pad(object):
 
     def __call__(self, image, label=None, *args):
         if label is not None:
-            label = pad_image(
-                'constant', label,
-                self.padding, self.padding, self.padding, self.padding,
-                value=255)
+            label = pad_image('constant',
+                              label,
+                              self.padding,
+                              self.padding,
+                              self.padding,
+                              self.padding,
+                              value=255)
         if self.fill == -1:
-            image = pad_image(
-                'reflection', image,
-                self.padding, self.padding, self.padding, self.padding)
+            image = pad_image('reflection', image, self.padding, self.padding,
+                              self.padding, self.padding)
         else:
-            image = pad_image(
-                'constant', image,
-                self.padding, self.padding, self.padding, self.padding,
-                value=self.fill)
+            image = pad_image('constant',
+                              image,
+                              self.padding,
+                              self.padding,
+                              self.padding,
+                              self.padding,
+                              value=self.fill)
         return (image, label, *args)
 
 
@@ -217,9 +224,8 @@ class PadImage(object):
 
     def __call__(self, image, label=None, *args):
         if self.fill == -1:
-            image = pad_image(
-                'reflection', image,
-                self.padding, self.padding, self.padding, self.padding)
+            image = pad_image('reflection', image, self.padding, self.padding,
+                              self.padding, self.padding)
         else:
             image = ImageOps.expand(image, border=self.padding, fill=self.fill)
         return (image, label, *args)
@@ -229,14 +235,14 @@ class ToTensor(object):
     """Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
     [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
     """
-
     def __call__(self, pic, label=None):
         if isinstance(pic, np.ndarray):
             # handle numpy array
             img = torch.from_numpy(pic)
         else:
             # handle PIL Image
-            img = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
+            img = torch.ByteTensor(torch.ByteStorage.from_buffer(
+                pic.tobytes()))
             # PIL image mode: 1, L, P, I, F, RGB, YCbCr, RGBA, CMYK
             if pic.mode == 'YCbCr':
                 nchannel = 3
@@ -256,7 +262,6 @@ class ToTensor(object):
 class Compose(object):
     """Composes several transforms together.
     """
-
     def __init__(self, transforms):
         self.transforms = transforms
 
