@@ -602,9 +602,9 @@ def test(eval_data_loader,
             pred = pred.cpu().data.numpy()
         batch_time.update(time.time() - end)
         if save_vis:
-            save_output_images(pred, name, output_dir)
-            #save_colorful_images(pred, name, output_dir + '_color',
-            #                     CITYSCAPE_PALETTE)
+            # save_output_images(pred, name, output_dir)
+            save_colorful_images(pred, name, output_dir + '_color',
+                                CITYSCAPE_PALETTE)
         if has_gt:
             label = label.numpy()
             hist += fast_hist(pred.flatten(), label.flatten(), num_classes)
@@ -693,16 +693,17 @@ def test_ms(eval_data_loader,
                 final = model(image_var)[0]
                 outputs.append(final.data)
             final = sum([resize_4d_tensor(out, w, h) for out in outputs])
-            sio.savemat('features/' + name[0][7:-4] + '.mat',
-                        {"feature": final})
+            # TODO fix bug here features/.mat not working right
+            # sio.savemat('features/' + name[0][7:-4] + '.mat',
+            #             {"feature": final})
             # _, pred = torch.max(torch.from_numpy(final), 1)
             # pred = pred.cpu().numpy()
             pred = final.argmax(axis=1)
         batch_time.update(time.time() - end)
         if save_vis:
-            save_output_images(pred, name, output_dir)
-            #save_colorful_images(pred, name, output_dir + '_color',
-            #                     CITYSCAPE_PALETTE)
+            # save_output_images(pred, name, output_dir)
+            save_colorful_images(pred, name, output_dir + '_color',
+                                CITYSCAPE_PALETTE)
         if has_gt:
             label = label.numpy()
             hist += fast_hist(pred.flatten(), label.flatten(), num_classes)
